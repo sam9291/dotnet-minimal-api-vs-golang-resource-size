@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  dotnet-minimal-api:
+    image: dotnet-minimal-api
+    build:
+      context: ./dotnet-minimal-api
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:80
+  golang-api:
+    image: golang-api
+    build:
+      context: ./golang-api
+      dockerfile: ./Dockerfile
+    ports:
+      - 8090:8090
