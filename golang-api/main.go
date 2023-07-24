@@ -34,21 +34,24 @@ func (forecast *WeatherForecast) ToResponse() Response {
 	}
 }
 
-func handleWeatherForecast(w http.ResponseWriter, req *http.Request) {
-	summaries := [...]string{
-		"Freezing",
-		"Bracing",
-		"Chilly",
-		"Cool",
-		"Mild",
-		"Warm",
-		"Balmy",
-		"Hot",
-		"Sweltering",
-		"Scorching",
-	}
+var summaries = []string{
+	"Freezing",
+	"Bracing",
+	"Chilly",
+	"Cool",
+	"Mild",
+	"Warm",
+	"Balmy",
+	"Hot",
+	"Sweltering",
+	"Scorching",
+}
 
-	forecasts := [5]WeatherForecast{}
+const amountOfForecastsToGenerate int = 5
+
+func handleWeatherForecast(w http.ResponseWriter, req *http.Request) {
+
+	forecasts := make([]WeatherForecast, amountOfForecastsToGenerate)
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -63,18 +66,17 @@ func handleWeatherForecast(w http.ResponseWriter, req *http.Request) {
 	respondJson(w, forecasts)
 }
 
-func respondJson(w http.ResponseWriter, data [5]WeatherForecast) {
+func respondJson(w http.ResponseWriter, data []WeatherForecast) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	response := [5]Response{}
+	response := make([]Response, len(data))
 
 	for i, element := range data {
 		response[i] = element.ToResponse()
 	}
 
 	json.NewEncoder(w).Encode(response)
-
 }
 
 func main() {
