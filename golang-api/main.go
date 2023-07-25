@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+type ResponseMapper interface {
+	ToResponse() Response
+}
+
 type Response struct {
 	Date         string `json:"date"`
 	TemperatureC int    `json:"temperatureC"`
@@ -21,11 +25,11 @@ type WeatherForecast struct {
 	Summary      string
 }
 
-func (forecast *WeatherForecast) TemperatureF() int {
+func (forecast WeatherForecast) TemperatureF() int {
 	return int(math.Round((32 + float64(forecast.TemperatureC)/0.5556)))
 }
 
-func (forecast *WeatherForecast) ToResponse() Response {
+func (forecast WeatherForecast) ToResponse() Response {
 	return Response{
 		TemperatureC: forecast.TemperatureC,
 		Date:         forecast.Date.Format("2006-01-02"),
@@ -51,7 +55,7 @@ const amountOfForecastsToGenerate int = 5
 
 func handleWeatherForecast(w http.ResponseWriter, req *http.Request) {
 
-	forecasts := make([]WeatherForecast, amountOfForecastsToGenerate)
+	forecasts := make([]Response, amountOfForecastsToGenerate)
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -60,23 +64,16 @@ func handleWeatherForecast(w http.ResponseWriter, req *http.Request) {
 			TemperatureC: rand.Intn(55-20) + 20,
 			Date:         time.Now().AddDate(0, 0, i),
 			Summary:      summaries[rand.Intn(len(summaries))],
-		}
+		}.ToResponse()
 	}
 
 	respondJson(w, forecasts)
 }
 
-func respondJson(w http.ResponseWriter, data []WeatherForecast) {
+func respondJson(w http.ResponseWriter, data []Response) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
-	response := make([]Response, len(data))
-
-	for i, element := range data {
-		response[i] = element.ToResponse()
-	}
-
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(data)
 }
 
 func main() {
